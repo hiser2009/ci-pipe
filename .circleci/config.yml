@@ -41,6 +41,6 @@ workflows:
           repo: circle-test
           skip-when-tags-exist: false
           tag: 'latest,myECRRepoTag'
-      - scan-iac:
+      - snyk/scan-iac:
           requires:
             - aws-ecr/build-and-push-image
