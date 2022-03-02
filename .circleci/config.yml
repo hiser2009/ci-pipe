@@ -14,11 +14,11 @@ jobs:
   #     - image: cimg/base:stable
   #   #Add steps to the job
   #   See: https://circleci.com/docs/2.0/configuration-reference/#steps
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: "Say hello"
-  #         command: "echo Hello, World!"
+    steps:
+      - checkout
+      - run:
+          name: "Starting Scan"
+          command: snyk/scan
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -41,6 +41,6 @@ workflows:
           repo: circle-test
           skip-when-tags-exist: false
           tag: 'latest,myECRRepoTag'
-      - snyk/scan-iac:
-          requires:
-            - aws-ecr/build-and-push-image
+      # - snyk/scan-iac:
+      #     requires:
+      #       - aws-ecr/build-and-push-image
