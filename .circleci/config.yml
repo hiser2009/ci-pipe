@@ -14,9 +14,9 @@ jobs:
   #     - image: cimg/base:stable
   #   #Add steps to the job
   #   See: https://circleci.com/docs/2.0/configuration-reference/#steps
-    steps:
-      - checkout
-      - snyk/scan
+  steps:
+    - checkout
+    - snyk/scan
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
