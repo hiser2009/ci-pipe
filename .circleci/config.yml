@@ -1,26 +1,98 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+orbs: 
+  snyk: snyk/snyk@1.1.2
+  slack: circleci/slack@4.8.3
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+  build:
+    working_directory: /app
     docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+      - image: centos:latest
     steps:
       - checkout
+      - setup_remote_docker
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
-
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+          name: Install dependencies
+          command: |
+            cd /etc/yum.repos.d/
+            sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+            sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+            cd -
+            yum update -y
+            yum install unzip -y
+            yum search tar
+            yum install tar -y
+            yum update tar
+            yum search gzip
+            yum install gzip -y
+            yum update gzip
+            yum install git -y
+            yum install -y yum-utils
+            dnf install sudo -y 
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
+            dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+            dnf repolist -v
+            dnf install docker-ce --nobest -y            
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/app.tar
+      # - run:
+      #     name: Make Dummy Docker Compse File
+      #     command: |
+      #       touch ././docker-compose.yml
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/app.tar | true
+      - run:
+          name: Build application Docker image
+          command: |
+            docker build --cache-from=app -t app .
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/app.tar app
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/app.tar
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #       echo docker-compose -f ./docker-compose.test.yml >> ./docker-compose.test.yml
+      #       docker-compose -f ./docker-compose.test.yml up
+      - run: echo Running SNYK Scan
+      - snyk/scan:
+          docker-image-name: app --severity-threshold=high     || true
+          fail-on-issues: true
+          install-alpine-dependencies: true
+      - deploy:
+          name: Push application Docker image
+          command: |
+            aws configure set AWS_ACCESS_KEY_ID ${ACCESS_KEY_ID}
+            aws configure set AWS_SECRET_ACCESS_KEY ${SECRET_ACCESS_KEY}
+            aws configure set AWS_DEFAULT_REGION ${AWS_DEFAULT_REGION}
+            if [ "${CIRCLE_BRANCH}" == "main" ]; then
+              login="$(aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL)"
+              docker tag app "${AWS_ECR_ACCOUNT_URL}/app:${CIRCLE_SHA1}" 
+              docker push "${AWS_ECR_ACCOUNT_URL}/app:${CIRCLE_SHA1}"
+            fi
+      - slack/notify:
+          channel: 'circle-test-ecr-app'
+          event: pass
+          template: basic_success_1
+      - slack/notify:
+          channel: 'circle-test-ecr-app'
+          event: fail
+          template: basic_fail_1
+          
 workflows:
-  say-hello-workflow:
+  version: 2
+  build_and_deploy:
     jobs:
-      - say-hello 
+      - build
