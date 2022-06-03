@@ -77,9 +77,6 @@ jobs:
       - deploy:
           name: Push application Docker image
           command: |
-            # aws configure set AWS_ACCESS_KEY_ID ${ACCESS_KEY_ID}
-            # aws configure set AWS_SECRET_ACCESS_KEY ${SECRET_ACCESS_KEY}
-            # aws configure set AWS_DEFAULT_REGION ${AWS_DEFAULT_REGION}
             export AWS_PAGER=""
             # use the OpenID Connect token to obtain AWS credentials
             read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
@@ -98,6 +95,9 @@ jobs:
               docker tag app "${AWS_ECR_ACCOUNT_URL}/app:${CIRCLE_SHA1}" 
               docker push "${AWS_ECR_ACCOUNT_URL}/app:${CIRCLE_SHA1}"
             fi
+            aws sts get-caller-identity
+            aws s3 ls
+            aws ecr describe-images --repository-name app | jq -r
       # - slack/notify:
       #     channel: 'circle-test-ecr-app'
       #     event: pass
@@ -106,36 +106,36 @@ jobs:
       #     channel: 'circle-test-ecr-app'
       #     event: fail
       #     template: basic_fail_1
-      - run: 
-          name: authenticate-and-interact 
-          command: |
-            yum install jq -y
-            vers=$(cat /etc/os-release)
-            echo $vers
-            aws ecr describe-images --repository-name app | jq -r
-            # apk update
-            # apk add --no-cache \
-            # python3 \
-            # py3-pip \
-            # && pip3 install --upgrade pip \
-            # && pip3 install --no-cache-dir \
-            # awscli \
-            # && rm -rf /var/cache/apk/* 
-            aws sts get-caller-identity
-            export AWS_PAGER=""
-            # use the OpenID Connect token to obtain AWS credentials
-            read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
-               $(aws sts assume-role-with-web-identity \
-               --role-arn ${AWS_ROLE_ARN} \
-               --role-session-name "CircleCI-${CIRCLE_WORKFLOW_ID}-${CIRCLE_JOB}" \
-               --web-identity-token $CIRCLE_OIDC_TOKEN \
-               --duration-seconds 3600 \
-               --region ${AWS_DEFAULT_REGION} \
-               --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
-               --output text)
-            export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
-            # interact with AWS
-            aws sts get-caller-identity
+      # - run: 
+      #     name: authenticate-and-interact 
+      #     command: |
+      #       yum install jq -y
+      #       vers=$(cat /etc/os-release)
+      #       echo $vers
+      #       aws ecr describe-images --repository-name app | jq -r
+      #       # apk update
+      #       # apk add --no-cache \
+      #       # python3 \
+      #       # py3-pip \
+      #       # && pip3 install --upgrade pip \
+      #       # && pip3 install --no-cache-dir \
+      #       # awscli \
+      #       # && rm -rf /var/cache/apk/* 
+      #       aws sts get-caller-identity
+      #       export AWS_PAGER=""
+      #       # use the OpenID Connect token to obtain AWS credentials
+      #       read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
+      #          $(aws sts assume-role-with-web-identity \
+      #          --role-arn ${AWS_ROLE_ARN} \
+      #          --role-session-name "CircleCI-${CIRCLE_WORKFLOW_ID}-${CIRCLE_JOB}" \
+      #          --web-identity-token $CIRCLE_OIDC_TOKEN \
+      #          --duration-seconds 3600 \
+      #          --region ${AWS_DEFAULT_REGION} \
+      #          --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+      #          --output text)
+      #       export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+      #       # interact with AWS
+      #       aws sts get-caller-identity
 workflows:
   version: 2
   build_and_deploy:
