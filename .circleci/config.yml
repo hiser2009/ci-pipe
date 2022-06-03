@@ -96,6 +96,7 @@ jobs:
       - run: 
           name: authenticate-and-interact 
           command: |
+            yum install jq -y
             vers=$(cat /etc/os-release)
             echo $vers
             aws ecr describe-images --repository-name app | jq -r
