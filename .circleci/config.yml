@@ -167,7 +167,7 @@ jobs:
             yum install -y yum-utils
             dnf install sudo -y  
       - snyk/scan:
-          docker-image-name: $AWS_ECR_ACCOUNT_URL}/app:latest --severity-threshold=high     || true
+          docker-image-name: $AWS_ECR_ACCOUNT_URL/app:latest --severity-threshold=high     || true
           fail-on-issues: true
           install-alpine-dependencies: true
 workflows:
