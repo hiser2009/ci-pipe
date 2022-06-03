@@ -142,3 +142,7 @@ workflows:
     jobs:
       - build:
           context: my-context
+      - hold:
+          type: approval # presents manual approval button in the UI
+          requires:
+            - build
