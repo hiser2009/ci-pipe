@@ -147,6 +147,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: echo Running SNYK Scan
+      - run: dnf install sudo -y 
       - snyk/scan:
           docker-image-name: app --severity-threshold=high     || true
           fail-on-issues: true
