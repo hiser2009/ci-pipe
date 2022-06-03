@@ -97,14 +97,14 @@ jobs:
           name: authenticate-and-interact 
           command: |
             echo cat /etc/os-release
-            apk update
-            apk add --no-cache \
-            python3 \
-            py3-pip \
-            && pip3 install --upgrade pip \
-            && pip3 install --no-cache-dir \
-            awscli \
-            && rm -rf /var/cache/apk/* 
+            # apk update
+            # apk add --no-cache \
+            # python3 \
+            # py3-pip \
+            # && pip3 install --upgrade pip \
+            # && pip3 install --no-cache-dir \
+            # awscli \
+            # && rm -rf /var/cache/apk/* 
             aws sts get-caller-identity
             export AWS_PAGER=""
             # use the OpenID Connect token to obtain AWS credentials
