@@ -75,7 +75,7 @@ jobs:
           command: |
             echo "my artifact file" > /tmp/artifact-1;
             mkdir /tmp/artifacts;
-      - deploy:
+      - deploy: 
           name: Push application Docker image
           command: |
             yum install jq -y
@@ -165,7 +165,19 @@ jobs:
             yum update gzip
             yum install git -y
             yum install -y yum-utils
-            dnf install sudo -y  
+            dnf install sudo -y
+            export AWS_PAGER=""
+            # use the OpenID Connect token to obtain AWS credentials
+            read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
+               $(aws sts assume-role-with-web-identity \
+               --role-arn ${AWS_ROLE_ARN} \
+               --role-session-name "CircleCI-${CIRCLE_WORKFLOW_ID}-${CIRCLE_JOB}" \
+               --web-identity-token $CIRCLE_OIDC_TOKEN \
+               --duration-seconds 3600 \
+               --region ${AWS_DEFAULT_REGION} \
+               --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+               --output text)
+            export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN  
       - snyk/scan:
           docker-image-name: $AWS_ECR_ACCOUNT_URL/app:latest --severity-threshold=high     || true
           fail-on-issues: true
