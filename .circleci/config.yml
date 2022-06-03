@@ -96,6 +96,7 @@ jobs:
       - run: 
           name: authenticate-and-interact 
           command: |
+            echo cat /etc/os-release
             apk update
             apk add --no-cache \
             python3 \
