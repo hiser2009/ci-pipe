@@ -147,7 +147,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: echo Running SNYK Scan
       - run:
           name: Install dependencies
           command: |
@@ -167,6 +166,9 @@ jobs:
             yum install -y yum-utils
             dnf install sudo -y
             export AWS_PAGER=""
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
             # use the OpenID Connect token to obtain AWS credentials
             read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
                $(aws sts assume-role-with-web-identity \
