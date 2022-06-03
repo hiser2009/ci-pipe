@@ -147,7 +147,24 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: echo Running SNYK Scan
-      - run: dnf install sudo -y 
+      - run:
+          name: Install dependencies
+          command: |
+            cd /etc/yum.repos.d/
+            sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+            sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+            cd -
+            yum update -y
+            yum install unzip -y
+            yum search tar
+            yum install tar -y
+            yum update tar
+            yum search gzip
+            yum install gzip -y
+            yum update gzip
+            yum install git -y
+            yum install -y yum-utils
+            dnf install sudo -y  
       - snyk/scan:
           docker-image-name: app --severity-threshold=high     || true
           fail-on-issues: true
