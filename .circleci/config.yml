@@ -42,10 +42,6 @@ jobs:
             - v1-{{ .Branch }}
           paths:
             - /caches/app.tar
-      # - run:
-      #     name: Make Dummy Docker Compse File
-      #     command: |
-      #       touch ././docker-compose.yml
       - run:
           name: Load Docker image layer cache
           command: |
@@ -74,6 +70,11 @@ jobs:
           docker-image-name: app --severity-threshold=high     || true
           fail-on-issues: true
           install-alpine-dependencies: true
+      - run:
+          name: Creating Dummy Artifacts
+          command: |
+            echo "my artifact file" > /tmp/artifact-1;
+            mkdir /tmp/artifacts;
       - deploy:
           name: Push application Docker image
           command: |
@@ -166,7 +167,7 @@ jobs:
             yum install -y yum-utils
             dnf install sudo -y  
       - snyk/scan:
-          docker-image-name: app --severity-threshold=high     || true
+          docker-image-name: $AWS_ECR_ACCOUNT_URL}/app:latest --severity-threshold=high     || true
           fail-on-issues: true
           install-alpine-dependencies: true
 workflows:
