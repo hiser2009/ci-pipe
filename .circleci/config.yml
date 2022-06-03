@@ -97,7 +97,6 @@ jobs:
               docker push "${AWS_ECR_ACCOUNT_URL}/app:${CIRCLE_SHA1}"
             fi
             aws sts get-caller-identity | jq -r
-            aws s3 ls
             aws ecr describe-images --repository-name app | jq -r
       # - slack/notify:
       #     channel: 'circle-test-ecr-app'
