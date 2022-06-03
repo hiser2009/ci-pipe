@@ -65,11 +65,11 @@ jobs:
       #     command: |
       #       echo docker-compose -f ./docker-compose.test.yml >> ./docker-compose.test.yml
       #       docker-compose -f ./docker-compose.test.yml up
-      - run: echo Running SNYK Scan
-      - snyk/scan:
-          docker-image-name: app --severity-threshold=high     || true
-          fail-on-issues: true
-          install-alpine-dependencies: true
+      # - run: echo Running SNYK Scan
+      # - snyk/scan:
+      #     docker-image-name: app --severity-threshold=high     || true
+      #     fail-on-issues: true
+      #     install-alpine-dependencies: true
       - run:
           name: Creating Dummy Artifacts
           command: |
@@ -177,7 +177,8 @@ jobs:
                --region ${AWS_DEFAULT_REGION} \
                --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
                --output text)
-            export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN  
+            export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+      - run: echo Running SNYK Scan  
       - snyk/scan:
           docker-image-name: $AWS_ECR_ACCOUNT_URL/app:latest --severity-threshold=high     || true
           fail-on-issues: true
