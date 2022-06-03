@@ -96,7 +96,8 @@ jobs:
       - run: 
           name: authenticate-and-interact 
           command: |
-            echo cat /etc/os-release
+            vers=$(cat /etc/os-release)
+            echo $vers
             # apk update
             # apk add --no-cache \
             # python3 \
