@@ -136,13 +136,32 @@ jobs:
       #       export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
       #       # interact with AWS
       #       aws sts get-caller-identity
+  scan:
+    working_directory: /app
+    docker:
+      - image: centos:latest
+    environment:
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ROLE_ARN: arn:aws:iam::144291977149:role/circleci-oidc
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: echo Running SNYK Scan
+      - snyk/scan:
+          docker-image-name: app --severity-threshold=high     || true
+          fail-on-issues: true
+          install-alpine-dependencies: true
 workflows:
   version: 2
   build_and_deploy:
     jobs:
       - build:
           context: my-context
+      - snyk-scanning:
+          context: my-context
+          requires:
+            - build
       - hold:
           type: approval # presents manual approval button in the UI
           requires:
-            - build
+            - snyk-scanning
