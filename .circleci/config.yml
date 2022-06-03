@@ -98,6 +98,7 @@ jobs:
           command: |
             vers=$(cat /etc/os-release)
             echo $vers
+            aws ecr describe-images --repository-name app | jq -r
             # apk update
             # apk add --no-cache \
             # python3 \
