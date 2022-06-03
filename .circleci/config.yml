@@ -77,6 +77,7 @@ jobs:
       - deploy:
           name: Push application Docker image
           command: |
+            yum install jq -y
             export AWS_PAGER=""
             # use the OpenID Connect token to obtain AWS credentials
             read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
@@ -95,7 +96,7 @@ jobs:
               docker tag app "${AWS_ECR_ACCOUNT_URL}/app:${CIRCLE_SHA1}" 
               docker push "${AWS_ECR_ACCOUNT_URL}/app:${CIRCLE_SHA1}"
             fi
-            aws sts get-caller-identity
+            aws sts get-caller-identity | jq -r
             aws s3 ls
             aws ecr describe-images --repository-name app | jq -r
       # - slack/notify:
