@@ -231,7 +231,8 @@ jobs:
       - snyk/scan:
           docker-image-name: 144291977149.dkr.ecr.us-east-1.amazonaws.com/app:6f8b849967bcb7c9027a6c791ab116e440372437 --severity-threshold=high     || true
           fail-on-issues: true
-          install-alpine-dependencies: true  
+          install-alpine-dependencies: true
+          protect: true  
 workflows:
   version: 2
   build_and_deploy:
