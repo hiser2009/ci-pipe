@@ -223,10 +223,11 @@ jobs:
             export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
             # interact with AWS
             aws sts get-caller-identity
-      - run: 
-          name: ECR Login
-          command: |
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 144291977149.dkr.ecr.us-east-1.amazonaws.com
+      # - run: 
+      #     name: ECR Login
+      #     command: |
+      #       aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 144291977149.dkr.ecr.us-east-1.amazonaws.com
       - snyk/scan:
           docker-image-name: 144291977149.dkr.ecr.us-east-1.amazonaws.com/app:6f8b849967bcb7c9027a6c791ab116e440372437 --severity-threshold=high     || true
           fail-on-issues: true
