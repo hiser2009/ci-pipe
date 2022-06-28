@@ -132,7 +132,50 @@ jobs:
       #       export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
       #       # interact with AWS
       #       aws sts get-caller-identity
-  snyk-scanning:
+  # snyk-scanning:
+  #   working_directory: /app
+  #   docker:
+  #     - image: centos:latest
+  #   environment:
+  #     AWS_DEFAULT_REGION: us-east-1
+  #     AWS_ROLE_ARN: arn:aws:iam::144291977149:role/circleci-oidc
+  #   steps:
+  #     - checkout
+  #     - setup_remote_docker
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           cd /etc/yum.repos.d/
+  #           sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+  #           sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+  #           cd -
+  #           yum update -y
+  #           yum install unzip -y
+  #           yum search tar
+  #           yum install tar -y
+  #           yum update tar
+  #           yum search gzip
+  #           yum install gzip -y
+  #           yum update gzip
+  #           yum install git -y
+  #           yum install -y yum-utils
+  #           dnf install sudo -y
+  #           export AWS_PAGER=""
+  #           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  #           unzip awscliv2.zip
+  #           ./aws/install
+  #           # use the OpenID Connect token to obtain AWS credentials
+  #           read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
+  #              $(aws sts assume-role-with-web-identity \
+  #              --role-arn ${AWS_ROLE_ARN} \
+  #              --role-session-name "CircleCI-${CIRCLE_WORKFLOW_ID}-${CIRCLE_JOB}" \
+  #              --web-identity-token $CIRCLE_OIDC_TOKEN \
+  #              --duration-seconds 3600 \
+  #              --region ${AWS_DEFAULT_REGION} \
+  #              --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+  #              --output text)
+  #           export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+  scan_me:
     working_directory: /app
     docker:
       - image: centos:latest
@@ -175,18 +218,19 @@ jobs:
                --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
                --output text)
             export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
-      - run: echo Running SNYK Scan  
+      - run: echo Running SNYK Scan
+      - run: aws ecr get-login-password --region region | docker login --username AWS --password-stdin 144291977149.dkr.ecr.us-east-1.amazonaws.com
       - snyk/scan:
           docker-image-name: 144291977149.dkr.ecr.us-east-1.amazonaws.com/app:6f8b849967bcb7c9027a6c791ab116e440372437 --severity-threshold=high     || true
           fail-on-issues: true
-          install-alpine-dependencies: true
+          install-alpine-dependencies: true  
 workflows:
   version: 2
   build_and_deploy:
     jobs:
       - build:
           context: my-context
-      - snyk-scanning:
+      - scan_me:
           context: my-context
           requires:
             - hold
