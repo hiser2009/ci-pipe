@@ -242,13 +242,12 @@ workflows:
       - scan_me:
           context: my-context
           requires:
-            - slack/on-hold
+            - pause_workflow
       - slack/on-hold:
-          type: approval
-          context: SLACK
           requires:
             - build
-      # - hold:
-      #     type: approval # presents manual approval button in the UI
-      #     requires:
-      #       - build
+          context: SLACK
+      - pause_workflow:
+          requires:
+            - slack/on-hold
+          type: approval
