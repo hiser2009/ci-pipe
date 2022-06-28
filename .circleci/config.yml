@@ -244,10 +244,11 @@ workflows:
           requires:
             - slack/on-hold
       - slack/on-hold:
-          context: SLACK_CHANNEL_BUILD_EVENTS
-          requires:
-            - hold
-      - hold:
-          type: approval # presents manual approval button in the UI
+          type: approval
+          context: SLACK
           requires:
             - build
+      # - hold:
+      #     type: approval # presents manual approval button in the UI
+      #     requires:
+      #       - build
