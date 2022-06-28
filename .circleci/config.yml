@@ -242,6 +242,10 @@ workflows:
       - scan_me:
           context: my-context
           requires:
+            - slack/on-hold
+      - slack/on-hold:
+          context: SLACK_CHANNEL_BUILD_EVENTS
+          requires:
             - hold
       - hold:
           type: approval # presents manual approval button in the UI
