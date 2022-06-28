@@ -207,6 +207,8 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             ./aws/install
+            yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+            yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
             # use the OpenID Connect token to obtain AWS credentials
             read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
                $(aws sts assume-role-with-web-identity \
